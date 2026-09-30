@@ -76,6 +76,40 @@ import Icon from "./Icon.astro";
     border-radius: var(--radius-inner) 24px 24px var(--radius-inner);
   }
 
+  /* Too narrow for every label on one row: two per row, rounding the block's
+     outer corners instead. A lone last pill spans the row. Selectors keep one
+     specificity so the hover morph below still wins. */
+  @media (width <= 520px) {
+    .socials {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .socials li:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+
+    .socials li:nth-child(n) .pill {
+      border-radius: var(--radius-inner);
+    }
+
+    .socials li:first-child .pill {
+      border-top-left-radius: 24px;
+    }
+
+    .socials li:nth-child(2) .pill {
+      border-top-right-radius: 24px;
+    }
+
+    .socials li:nth-last-child(2):where(:nth-child(odd)) .pill,
+    .socials li:last-child:where(:nth-child(odd)) .pill {
+      border-bottom-left-radius: 24px;
+    }
+
+    .socials li:last-child .pill {
+      border-bottom-right-radius: 24px;
+    }
+  }
+
   .socials li .pill:hover,
   .socials li .pill:focus-visible {
     border-radius: 999px;

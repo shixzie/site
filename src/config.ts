@@ -74,15 +74,37 @@ export const works = [
 /** Scrolling marquee between sections. */
 export const toolbox = [
   "TypeScript",
+  "Go",
   "React",
   "Effect",
   "Next.js",
   "Cloudflare Workers",
   "Railway",
   "PostgreSQL",
+  "Node.js",
   "WebAssembly",
+  "AWS",
   "MCP",
+  "Redis",
+  "Docker",
   "Astro",
+];
+
+/** Work history. The page shows it on the timeline; /llms.txt lists the details. */
+export const experience = [
+  {
+    company: "Prisma Gestión Empresarial",
+    href: "https://www.prisma.com.co",
+    role: "Full-Stack Developer",
+    period: "Apr 2019 – Aug 2026",
+    about: "Event-management company in Medellín that runs Feria 2 Ruedas.",
+    highlights: [
+      "Ran the company's digital infrastructure and its events, keeping them available through traffic spikes.",
+      "Designed, built and maintained 4+ production websites with React, Next.js and Strapi.",
+      "Built internal Go and Node.js APIs for accreditation, payments and event data.",
+      "Brought AI-assisted development (Claude Code, Codex) into the team's workflow.",
+    ],
+  },
 ];
 
 export const timeline = [
@@ -90,11 +112,16 @@ export const timeline = [
   { when: "Now", what: "Building RealPDF and Factory on Rails in the open." },
   { when: "2026 Sep", what: "Started Factory on Rails, a software factory where coding agents open the pull requests." },
   { when: "2026 Sep", what: "Launched RealPDF: edit, sign and convert PDFs without uploading them anywhere." },
+  {
+    when: "2019–2026",
+    what: "Full-stack developer at Prisma Gestión Empresarial, the team behind Feria\u00a02\u00a0Ruedas: ran the web side of its events and built its Go and Node.js APIs.",
+  },
   { when: "2016", what: "Opened a GitHub account and started building in public." },
 ];
 
 export const socials = [
   { label: "GitHub", href: "https://github.com/shixzie", icon: "github" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/juanca-alvrz/", icon: "linkedin" },
   { label: "X", href: "https://x.com/shixzie", icon: "x" },
   { label: "Gists", href: "https://gist.github.com/shixzie", icon: "code" },
 ] as const;
