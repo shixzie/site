@@ -1,0 +1,5 @@
+# Applied by Cloudflare to static asset responses.
+# Astro fingerprints everything in /_astro/, so those files never change.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff

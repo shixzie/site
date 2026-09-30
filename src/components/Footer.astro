@@ -1,0 +1,95 @@
+---
+import { profile } from "../config";
+import Icon from "./Icon.astro";
+import SlowMo from "./SlowMo.astro";
+import Wordmark from "./Wordmark.astro";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <Wordmark text={profile.handle} />
+  <div class="row wrap">
+    <p class="legal">
+      © {year} {profile.name} · <span class="bio">{profile.bio}</span>
+    </p>
+    <div class="actions">
+      <SlowMo />
+      <a class="top" href="#top">
+        Back to top
+        <span class="top-icon" aria-hidden="true"><Icon name="arrow-up" size={14} /></span>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    display: grid;
+    gap: 28px;
+    padding-bottom: 28px;
+    overflow: clip;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-3);
+    font-size: 13px;
+  }
+
+  .bio {
+    font-family: var(--font-serif-stack);
+    font-size: 15px;
+    font-style: italic;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: -8px;
+  }
+
+  .top {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    color: var(--ink-2);
+    font-weight: 500;
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out);
+  }
+
+  .top:hover {
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  .top-icon {
+    display: grid;
+    overflow: hidden;
+  }
+
+  .top:hover .top-icon :global(svg) {
+    animation: nudge-up var(--dur-3) var(--ease-out-expo);
+  }
+
+  @keyframes nudge-up {
+    45% {
+      translate: 0 -120%;
+    }
+    46% {
+      translate: 0 120%;
+    }
+  }
+</style>

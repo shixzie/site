@@ -1,0 +1,51 @@
+---
+// Tiny rounded flag. Add more countries to `flags` as needed.
+interface Props {
+  code: "co";
+  label: string;
+}
+
+const { code, label } = Astro.props;
+
+const flags = {
+  co: '<rect width="30" height="10" fill="#FCD116"/><rect y="10" width="30" height="5" fill="#003893"/><rect y="15" width="30" height="5" fill="#CE1126"/>',
+};
+---
+
+<svg class="flag" role="img" aria-label={label} viewBox="0 0 30 20" width="18" height="12">
+  <title>{label}</title>
+  <clipPath id={`flag-${code}`}>
+    <rect width="30" height="20" rx="4"></rect>
+  </clipPath>
+  <g clip-path={`url(#flag-${code})`} set:html={flags[code]}></g>
+  <rect class="shine" width="30" height="20" rx="4" fill="none" stroke="currentColor" stroke-opacity="0.12"></rect>
+</svg>
+
+<style>
+  .flag {
+    flex: none;
+    transform-origin: 20% 90%;
+  }
+
+  :global(:hover) > .flag {
+    animation: wiggle calc(700ms * var(--slowmo)) var(--ease-out);
+  }
+
+  @keyframes wiggle {
+    20% {
+      rotate: -12deg;
+    }
+    45% {
+      rotate: 8deg;
+    }
+    70% {
+      rotate: -4deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(:hover) > .flag {
+      animation: none;
+    }
+  }
+</style>

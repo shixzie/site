@@ -1,0 +1,147 @@
+---
+// Cycles through `words` in place: the outgoing word lifts away, the next one
+// springs up from below, and the slot's width glides to fit it.
+interface Props {
+  words: string[];
+}
+
+const { words } = Astro.props;
+---
+
+<span class="roller" data-roller>
+  <span class="sr-only">{words.join(", ")}</span>
+  {
+    words.map((word, index) => (
+      <span class:list={["word-slot", { "is-active": index === 0 }]} aria-hidden="true">
+        {word}
+      </span>
+    ))
+  }
+</span>
+
+<style>
+  .roller {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+    /* Mask vertically only — the width animation handles the sides. */
+    clip-path: inset(-0.2em -100vw -0.28em -0.2em);
+    /* the slot resizes just after the old word starts lifting away */
+    transition: width var(--dur-3) var(--ease-out-expo) calc(70ms * var(--slowmo));
+  }
+
+  .word-slot {
+    display: inline-block;
+    font-family: var(--font-serif-stack);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.14em;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    padding-right: 0.08em;
+  }
+
+  .word-slot:not(.is-active) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    translate: 0 100%;
+    pointer-events: none;
+  }
+
+  /* underline that sweeps in under the active word */
+  .word-slot::after {
+    content: "";
+    display: block;
+    height: 0.09em;
+    margin-top: -0.06em;
+    border-radius: 1em;
+    background: var(--accent);
+    transform-origin: left center;
+    scale: 0 1;
+  }
+
+  /* Entrances spring in (slightly late); exits are quicker and accelerate away. */
+  :global(.js) .word-slot {
+    transition:
+      translate var(--dur-spring) var(--ease-spring) calc(90ms * var(--slowmo)),
+      opacity var(--dur-2) var(--ease-out) calc(90ms * var(--slowmo));
+  }
+
+  :global(.js) .word-slot.is-leaving {
+    translate: 0 -105%;
+    opacity: 0;
+    transition:
+      translate calc(320ms * var(--slowmo)) var(--ease-in),
+      opacity calc(220ms * var(--slowmo)) var(--ease-out);
+  }
+
+  :global(.js) .word-slot.is-active::after {
+    scale: 1 1;
+    transition: scale var(--dur-4) var(--ease-out-expo) calc(160ms * var(--slowmo));
+  }
+
+  :global(.js) .word-slot.is-leaving::after {
+    scale: 0 1;
+    transform-origin: right center;
+    transition: scale var(--dur-2) var(--ease-in);
+  }
+
+  :global(html:not(.js)) .word-slot.is-active::after {
+    scale: 1 1;
+  }
+</style>
+
+<script>
+  import { prefersReducedMotion, timeScale, watchVisibility } from "../scripts/motion";
+
+  const HOLD_MS = 2600;
+
+  for (const roller of document.querySelectorAll<HTMLElement>("[data-roller]")) {
+    const slots = [...roller.querySelectorAll<HTMLElement>(".word-slot")];
+    if (slots.length < 2 || prefersReducedMotion()) continue;
+
+    let index = 0;
+    let timer = 0;
+    let visible = false;
+
+    const advance = () => {
+      const current = slots[index];
+      index = (index + 1) % slots.length;
+      const next = slots[index];
+
+      // Lock the current width so the change can be transitioned.
+      roller.style.width = `${roller.offsetWidth}px`;
+
+      // Reset the incoming word below the line without animating it there.
+      next.style.transition = "none";
+      next.classList.remove("is-leaving");
+      void next.offsetWidth;
+      next.style.transition = "";
+
+      current.classList.replace("is-active", "is-leaving");
+      next.classList.add("is-active");
+      roller.style.width = `${next.offsetWidth}px`;
+
+      schedule();
+    };
+
+    const schedule = () => {
+      window.clearTimeout(timer);
+      if (visible && !document.hidden) timer = window.setTimeout(advance, HOLD_MS * timeScale());
+    };
+
+    watchVisibility(roller, (isVisible) => {
+      visible = isVisible;
+      schedule();
+    });
+    document.addEventListener("visibilitychange", schedule);
+
+    // Fonts can change the active word's width after first paint.
+    document.fonts?.ready.then(() => {
+      if (roller.style.width) roller.style.width = `${slots[index].offsetWidth}px`;
+    });
+  }
+</script>

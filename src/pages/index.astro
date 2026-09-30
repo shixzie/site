@@ -1,0 +1,57 @@
+---
+import Contact from "../components/Contact.astro";
+import Featured from "../components/Featured.astro";
+import Footer from "../components/Footer.astro";
+import Hero from "../components/Hero.astro";
+import Marquee from "../components/Marquee.astro";
+import Section from "../components/Section.astro";
+import Timeline from "../components/Timeline.astro";
+import Topbar from "../components/Topbar.astro";
+import Works from "../components/Works.astro";
+import { toolbox } from "../config";
+import Base from "../layouts/Base.astro";
+---
+
+<Base>
+  <div id="top"></div>
+  <Topbar />
+  <main id="content" class="wrap">
+    <Hero />
+
+    <Section index={1} title="Featured" id="featured">
+      <Featured />
+    </Section>
+
+    <Section index={2} title="Other works" id="works">
+      <Works />
+    </Section>
+
+    <Section index={3} title="Toolbox" id="toolbox" class="toolbox">
+      <Marquee items={toolbox} label="Tools I use" />
+    </Section>
+
+    <Section index={4} title="Background" id="background">
+      <Timeline />
+    </Section>
+
+    <Section index={5} title="Say hi" id="contact">
+      <Contact />
+    </Section>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  main {
+    display: grid;
+    gap: 104px;
+    padding: 72px 0 140px;
+  }
+
+  @media (width <= 600px) {
+    main {
+      gap: 80px;
+      padding: 52px 0 110px;
+    }
+  }
+</style>

@@ -1,0 +1,112 @@
+---
+// Giant handle set in Geist's variable weight axis. Letters thicken as the
+// cursor approaches (each on its own spring); without a cursor, a slow wave
+// of weight rolls through the word instead.
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<div class="wordmark" data-wordmark aria-hidden="true">
+  <span data-reveal="chars">
+    {
+      [...text].map((char, index) => (
+        <span class="char">
+          <span style={`--c:${index}`} data-wordmark-char>
+            {char}
+          </span>
+        </span>
+      ))
+    }
+  </span>
+</div>
+
+<style>
+  .wordmark {
+    display: flex;
+    justify-content: center;
+    font-size: clamp(76px, 21vw, 232px);
+    font-weight: 300;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .wordmark > span {
+    white-space: nowrap;
+  }
+
+  [data-wordmark-char] {
+    font-weight: var(--wght, 300);
+  }
+</style>
+
+<script>
+  import { Spring, createLoop, hasFinePointer, prefersReducedMotion, watchVisibility } from "../scripts/motion";
+
+  const REST = 300;
+  const MAX = 900;
+
+  for (const wordmark of document.querySelectorAll<HTMLElement>("[data-wordmark]")) {
+    if (prefersReducedMotion()) continue;
+    const chars = [...wordmark.querySelectorAll<HTMLElement>("[data-wordmark-char]")];
+    const springs = chars.map(() => new Spring(REST, 120, 16));
+    const pointer = { x: 0, y: 0, active: false };
+    let visible = false;
+    let time = 0;
+
+    let sigma = 100;
+    const measure = () => (sigma = parseFloat(getComputedStyle(wordmark).fontSize) * 0.75);
+    measure();
+    new ResizeObserver(measure).observe(wordmark);
+
+    const loop = createLoop((dt) => {
+      time += dt;
+
+      // Read every letter's position first, then write — no layout thrashing.
+      const centers = pointer.active
+        ? chars.map((char) => {
+            const rect = char.getBoundingClientRect();
+            return [rect.left + rect.width / 2, rect.top + rect.height / 2];
+          })
+        : null;
+
+      chars.forEach((char, index) => {
+        let influence: number;
+        if (centers) {
+          const dx = pointer.x - centers[index][0];
+          const dy = (pointer.y - centers[index][1]) * 0.6;
+          influence = Math.exp(-(dx * dx + dy * dy) / (2 * sigma * sigma));
+        } else {
+          // idle: a soft wave travelling left → right
+          influence = Math.max(0, Math.sin(time * 1.4 - index * 0.55)) ** 3 * 0.55;
+        }
+        const spring = springs[index];
+        spring.target = REST + (MAX - REST) * influence;
+        spring.step(dt);
+        char.style.setProperty("--wght", spring.value.toFixed(1));
+      });
+
+      return visible && !document.hidden;
+    });
+
+    watchVisibility(wordmark, (isVisible) => {
+      visible = isVisible;
+      if (visible) loop.wake();
+    });
+    document.addEventListener("visibilitychange", () => visible && loop.wake());
+
+    if (hasFinePointer()) {
+      const zone = wordmark.closest("footer") ?? wordmark;
+      zone.addEventListener("pointermove", (event) => {
+        pointer.x = (event as PointerEvent).clientX;
+        pointer.y = (event as PointerEvent).clientY;
+        pointer.active = true;
+      });
+      zone.addEventListener("pointerleave", () => (pointer.active = false));
+    }
+  }
+</script>

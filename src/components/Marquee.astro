@@ -1,0 +1,161 @@
+---
+// Full-bleed type marquee. It drifts on its own, speeds up with scroll
+// velocity and follows the scroll direction; hovering eases it to a crawl.
+interface Props {
+  items: string[];
+  label: string;
+}
+
+const { items, label } = Astro.props;
+---
+
+<div class="marquee" data-marquee data-reveal="fade">
+  <ul class="sr-only" aria-label={label}>
+    {items.map((item) => <li>{item}</li>)}
+  </ul>
+  <div class="track" aria-hidden="true" data-marquee-track>
+    <div class="group" data-marquee-group>
+      {
+        items.map((item, index) => (
+          <>
+            <span class:list={["item", index % 2 ? "serif-item" : "sans-item"]}>{item}</span>
+            <svg class="sep" viewBox="0 0 24 24" width="22" height="22">
+              <path d="M12 2c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7Z" transform="translate(0 3)" />
+            </svg>
+          </>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<style>
+  .marquee {
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+  }
+
+  .track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+  }
+
+  .group {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.45em;
+    padding-right: 0.45em;
+    font-size: clamp(36px, 7vw, 64px);
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .sans-item {
+    font-weight: 550;
+    letter-spacing: -0.04em;
+  }
+
+  .serif-item {
+    font-family: var(--font-serif-stack);
+    font-style: italic;
+    letter-spacing: -0.01em;
+    color: var(--ink-2);
+  }
+
+  .sep {
+    flex: none;
+    width: 0.42em;
+    height: 0.42em;
+    fill: var(--accent);
+    rotate: var(--spin, 0deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee {
+      width: auto;
+      margin-inline: 0;
+      overflow: visible;
+      mask-image: none;
+    }
+
+    .track {
+      display: block;
+      width: auto;
+    }
+
+    .group {
+      flex-wrap: wrap;
+      row-gap: 0.1em;
+      font-size: clamp(28px, 5vw, 40px);
+      white-space: normal;
+    }
+  }
+</style>
+
+<script>
+  import { createLoop, lerp, prefersReducedMotion, watchVisibility } from "../scripts/motion";
+
+  const BASE_SPEED = 42; // px per second
+  const HOVER_FACTOR = 0.18;
+
+  for (const marquee of document.querySelectorAll<HTMLElement>("[data-marquee]")) {
+    if (prefersReducedMotion()) continue;
+    const track = marquee.querySelector<HTMLElement>("[data-marquee-track]")!;
+    const group = marquee.querySelector<HTMLElement>("[data-marquee-group]")!;
+
+    let groupWidth = 0;
+    let offset = 0;
+    let direction = 1;
+    let speed = BASE_SPEED;
+    let boost = 0;
+    let hovered = false;
+    let visible = false;
+    let lastScrollY = window.scrollY;
+
+    // Clone the group until the track covers the viewport twice over.
+    const fill = () => {
+      groupWidth = group.offsetWidth;
+      const needed = Math.ceil((window.innerWidth * 2) / groupWidth) + 1;
+      while (track.children.length < needed) track.append(group.cloneNode(true));
+    };
+
+    const loop = createLoop((dt) => {
+      const target = BASE_SPEED * (hovered ? HOVER_FACTOR : 1) + boost;
+      speed = lerp(speed, target, 1 - Math.exp(-dt * 4));
+      boost = lerp(boost, 0, 1 - Math.exp(-dt * 2.5));
+      offset = (offset + speed * direction * dt) % groupWidth;
+      if (offset < 0) offset += groupWidth;
+      track.style.transform = `translate3d(${-offset}px, 0, 0)`;
+      track.style.setProperty("--spin", `${(offset / groupWidth) * 360 * 2}deg`);
+      return visible && !document.hidden;
+    });
+
+    fill();
+    new ResizeObserver(fill).observe(marquee);
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        const delta = window.scrollY - lastScrollY;
+        lastScrollY = window.scrollY;
+        if (!visible || delta === 0) return;
+        direction = delta > 0 ? 1 : -1;
+        boost = Math.min(boost + Math.abs(delta) * 6, 900);
+      },
+      { passive: true },
+    );
+
+    marquee.addEventListener("pointerenter", () => (hovered = true));
+    marquee.addEventListener("pointerleave", () => (hovered = false));
+
+    watchVisibility(marquee, (isVisible) => {
+      visible = isVisible;
+      if (visible) loop.wake();
+    });
+    document.addEventListener("visibilitychange", () => visible && loop.wake());
+  }
+</script>

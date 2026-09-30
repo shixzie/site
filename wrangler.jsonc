@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "shixzie-site",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-24",
+  "assets": {
+    // Astro's static build output.
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // Unknown paths get dist/404.html with a 404 status.
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash",
+    // Pages go through the Worker (www → apex redirect, security headers);
+    // fingerprinted assets are served straight from the edge cache.
+    "run_worker_first": ["/*", "!/_astro/*"]
+  },
+  // Both hostnames are attached as Workers Custom Domains (DNS + certificates
+  // are created on deploy). www.shixzie.com is redirected by worker/index.ts.
+  "routes": [
+    { "pattern": "shixzie.com", "custom_domain": true },
+    { "pattern": "www.shixzie.com", "custom_domain": true }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

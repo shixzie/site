@@ -1,0 +1,103 @@
+---
+import { works } from "../config";
+import Icon from "./Icon.astro";
+---
+
+<div class="works segmented">
+  {
+    works.map((work) => (
+      <a class="card work" href={work.href} target="_blank" rel="noreferrer" data-spotlight data-reveal>
+        <div class="top">
+          <h3>{work.title}</h3>
+          <span class="go" aria-hidden="true">
+            <Icon name="arrow-up-right" size={16} />
+          </span>
+        </div>
+        <p>{work.description}</p>
+        <span class="meta mono">{work.meta}</span>
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .works {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .work {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 22px 24px;
+  }
+
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    color: var(--ink-2);
+    font-size: 14px;
+    text-wrap: pretty;
+  }
+
+  .meta {
+    margin-top: auto;
+    padding-top: 14px;
+    color: var(--ink-3);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+
+  .go {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: var(--ink-3);
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out),
+      translate var(--dur-spring) var(--ease-spring),
+      rotate var(--dur-spring) var(--ease-spring);
+  }
+
+  .work:hover .go,
+  .work:focus-visible .go {
+    background: var(--ink);
+    color: var(--bg);
+    translate: 2px -2px;
+    rotate: 45deg;
+  }
+
+  @media (width <= 560px) {
+    .works {
+      grid-template-columns: 1fr;
+    }
+
+    .works > :first-child {
+      border-radius: var(--radius) var(--radius) var(--radius-inner) var(--radius-inner);
+    }
+
+    .works > :last-child {
+      border-radius: var(--radius-inner) var(--radius-inner) var(--radius) var(--radius);
+    }
+
+    .works > :hover {
+      border-radius: var(--radius);
+    }
+  }
+</style>

@@ -1,0 +1,379 @@
+---
+import { featured } from "../config";
+import Icon from "./Icon.astro";
+---
+
+<a class="card featured" href={featured.href} target="_blank" rel="noreferrer" data-spotlight data-reveal>
+  <div class="head">
+    <div>
+      <h3>{featured.title}</h3>
+      <p class="desc muted">{featured.description}</p>
+    </div>
+    <span class="arrow-btn" aria-hidden="true">
+      <Icon name="arrow-up-right" class="arrow a" />
+      <Icon name="arrow-up-right" class="arrow b" />
+    </span>
+  </div>
+
+  <canvas class="field" data-dotfield aria-hidden="true"></canvas>
+
+  <div class="foot">
+    <ul class="tags" role="list" aria-label="Built with">
+      {featured.tags.map((tag) => <li>{tag}</li>)}
+    </ul>
+    {
+      featured.repo && (
+        <div class="stats mono" data-repo={featured.repo}>
+          <span title="GitHub stars">
+            <Icon name="star" size={15} />
+            <b data-stat="stars">—</b>
+            <span class="sr-only">stars</span>
+          </span>
+          <span title="GitHub forks">
+            <Icon name="fork" size={15} />
+            <b data-stat="forks">—</b>
+            <span class="sr-only">forks</span>
+          </span>
+          <span class="updated" data-stat="updated" hidden />
+        </div>
+      )
+    }
+  </div>
+</a>
+
+<style>
+  .featured {
+    display: grid;
+    gap: 8px;
+    padding: 28px;
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  h3 {
+    margin-bottom: 6px;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .desc {
+    max-width: 50ch;
+    font-size: 15px;
+    text-wrap: pretty;
+  }
+
+  /* Two arrows: on hover the first flies out, the second flies in. */
+  .arrow-btn {
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--bg);
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out);
+  }
+
+  .arrow-btn :global(.arrow) {
+    position: absolute;
+    transition:
+      translate var(--dur-3) var(--ease-out-expo),
+      opacity var(--dur-2) var(--ease-out);
+  }
+
+  .arrow-btn :global(.b) {
+    opacity: 0;
+    translate: -24px 24px;
+  }
+
+  .featured:hover .arrow-btn,
+  .featured:focus-visible .arrow-btn {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .featured:hover .arrow-btn :global(.a),
+  .featured:focus-visible .arrow-btn :global(.a) {
+    opacity: 0;
+    translate: 24px -24px;
+  }
+
+  .featured:hover .arrow-btn :global(.b),
+  .featured:focus-visible .arrow-btn :global(.b) {
+    opacity: 1;
+    translate: none;
+  }
+
+  .field {
+    width: calc(100% + 56px);
+    height: 132px;
+    margin-inline: -28px;
+    color: var(--ink);
+    outline-color: var(--accent);
+    mask-image:
+      linear-gradient(to right, transparent, #000 12%, #000 88%, transparent),
+      linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+    mask-composite: intersect;
+    /* No-JS fallback: a static dot grid in place of the animated field. */
+    background: radial-gradient(circle, color-mix(in oklab, var(--ink) 22%, transparent) 1.2px, transparent 1.8px)
+      center / 14px 14px;
+  }
+
+  :global(.js) .field {
+    background: none;
+  }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tags li {
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--ink-2);
+    font-size: 14px;
+  }
+
+  .stats > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stats b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .updated {
+    color: var(--ink-3);
+    font-size: 13px;
+  }
+
+  @media (width <= 440px) {
+    .featured {
+      padding: 22px;
+    }
+
+    .field {
+      width: calc(100% + 44px);
+      margin-inline: -22px;
+      height: 112px;
+    }
+  }
+</style>
+
+<script>
+  import { Spring, createLoop, hasFinePointer, prefersReducedMotion, watchVisibility } from "../scripts/motion";
+  import { rollTo } from "../scripts/rolling";
+
+  /* ---------------------------------------------------------------- dot field
+   * A grid of dots breathing on two interfering waves; the cursor acts as a
+   * lens that swells nearby dots and tints them with the accent color.
+   */
+  const GAP = 14;
+  const LENS_RADIUS = 72;
+
+  for (const canvas of document.querySelectorAll<HTMLCanvasElement>("[data-dotfield]")) {
+    const context = canvas.getContext("2d");
+    const card = canvas.closest<HTMLElement>(".card");
+    if (!context || !card) continue;
+    const ctx = context;
+
+    const reduced = prefersReducedMotion();
+    let width = 0;
+    let height = 0;
+    let ink = "#000";
+    let accent = "#f00";
+    let time = 0;
+    let visible = false;
+    const pointer = { x: 0, y: 0 };
+    const lens = new Spring(0, 120, 18);
+
+    const readColors = () => {
+      const style = getComputedStyle(canvas);
+      ink = style.color;
+      accent = style.outlineColor;
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      const cols = Math.floor(width / GAP);
+      const rows = Math.floor(height / GAP);
+      const ox = (width - (cols - 1) * GAP) / 2;
+      const oy = (height - (rows - 1) * GAP) / 2;
+      const strength = lens.value;
+
+      for (let row = 0; row < rows; row++) {
+        const y = oy + row * GAP;
+        for (let col = 0; col < cols; col++) {
+          const x = ox + col * GAP;
+          const a = Math.sin(x * 0.021 - time * 1.1 + Math.sin(y * 0.045 + time * 0.5) * 1.4);
+          const b = Math.cos(y * 0.06 + time * 0.7 - x * 0.008);
+          const wave = (a * 0.62 + b * 0.38) * 0.5 + 0.5;
+
+          let boost = 0;
+          if (strength > 0.001) {
+            const dx = x - pointer.x;
+            const dy = y - pointer.y;
+            boost = Math.exp(-(dx * dx + dy * dy) / (2 * LENS_RADIUS * LENS_RADIUS)) * strength;
+          }
+
+          const radius = 0.55 + wave * wave * 1.7 + boost * 2.6;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.globalAlpha = 0.12 + wave * 0.42;
+          ctx.fillStyle = ink;
+          ctx.fill();
+          if (boost > 0.02) {
+            ctx.globalAlpha = Math.min(1, boost * 1.1);
+            ctx.fillStyle = accent;
+            ctx.fill();
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+    };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    };
+
+    const loop = createLoop((dt) => {
+      if (!reduced) time += dt;
+      lens.step(dt);
+      draw();
+      return visible && !document.hidden && (!reduced || !lens.settled);
+    });
+
+    readColors();
+    new ResizeObserver(resize).observe(canvas);
+    window.addEventListener("theme:change", () => requestAnimationFrame(() => (readColors(), draw())));
+
+    watchVisibility(canvas, (isVisible) => {
+      visible = isVisible;
+      if (visible && !reduced) loop.wake();
+    });
+    document.addEventListener("visibilitychange", () => visible && !reduced && loop.wake());
+
+    if (hasFinePointer() && !reduced) {
+      card.addEventListener("pointermove", (event) => {
+        const rect = canvas.getBoundingClientRect();
+        pointer.x = event.clientX - rect.left;
+        pointer.y = event.clientY - rect.top;
+        lens.target = 1;
+        loop.wake();
+      });
+      card.addEventListener("pointerleave", () => {
+        lens.target = 0;
+      });
+    }
+  }
+
+  /* ---------------------------------------------------------------- repo stats
+   * Live stars/forks from the GitHub API (cached per session), rolled into place
+   * the first time the card scrolls into view.
+   */
+  const CACHE_MS = 30 * 60 * 1000;
+
+  interface RepoStats {
+    stars: number;
+    forks: number;
+    pushedAt: string;
+  }
+
+  async function loadRepo(repo: string): Promise<RepoStats> {
+    const key = `gh:${repo}`;
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(key) ?? "null");
+      if (cached && Date.now() - cached.at < CACHE_MS) return cached.data;
+    } catch {}
+
+    const response = await fetch(`https://api.github.com/repos/${repo}`, {
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!response.ok) throw new Error(`GitHub API ${response.status}`);
+    const json = await response.json();
+    const data: RepoStats = {
+      stars: json.stargazers_count,
+      forks: json.forks_count,
+      pushedAt: json.pushed_at,
+    };
+    try {
+      sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), data }));
+    } catch {}
+    return data;
+  }
+
+  function timeAgo(iso: string) {
+    const seconds = (new Date(iso).getTime() - Date.now()) / 1000;
+    const format = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+    const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+      ["year", 31536000],
+      ["month", 2592000],
+      ["week", 604800],
+      ["day", 86400],
+      ["hour", 3600],
+      ["minute", 60],
+    ];
+    for (const [unit, size] of units) {
+      if (Math.abs(seconds) >= size) return format.format(Math.round(seconds / size), unit);
+    }
+    return "just now";
+  }
+
+  for (const stats of document.querySelectorAll<HTMLElement>("[data-repo]")) {
+    const stop = watchVisibility(stats, async (isVisible) => {
+      if (!isVisible) return;
+      stop();
+      try {
+        const repo = await loadRepo(stats.dataset.repo!);
+        rollTo(stats.querySelector<HTMLElement>('[data-stat="stars"]')!, repo.stars);
+        rollTo(stats.querySelector<HTMLElement>('[data-stat="forks"]')!, repo.forks);
+        const updated = stats.querySelector<HTMLElement>('[data-stat="updated"]')!;
+        updated.textContent = `updated ${timeAgo(repo.pushedAt)}`;
+        updated.hidden = false;
+      } catch {
+        // Offline or rate-limited: keep the placeholders.
+      }
+    });
+  }
+</script>

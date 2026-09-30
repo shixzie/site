@@ -1,0 +1,163 @@
+---
+import { profile } from "../config";
+---
+
+<span class="clock mono js-only" data-clock data-tz={profile.timeZone} data-place={profile.location}>
+  <span class="time" aria-hidden="true" data-clock-time>--:--</span>
+  <span class="period" aria-hidden="true" data-clock-period></span>
+  <span class="sr-only" data-clock-label>Local time in {profile.location}</span>
+</span>
+
+<style>
+  .clock {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35em;
+    font-size: 13px;
+    line-height: 1.2;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+
+  .time {
+    display: inline-flex;
+    color: var(--ink);
+  }
+
+  .period {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Each character sits in its own clipped slot so digits can roll. */
+  .time :global(.slot) {
+    position: relative;
+    display: inline-block;
+    min-width: 1ch;
+    height: 1lh;
+    overflow: hidden;
+    vertical-align: bottom;
+    text-align: center;
+  }
+
+  .time :global(.slot > span) {
+    display: block;
+  }
+
+  .time :global(.colon) {
+    display: inline-flex;
+    justify-content: center;
+    width: 0.55ch;
+    min-width: 0;
+    overflow: visible;
+    animation: blink calc(2s * var(--slowmo)) steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0.25;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .time :global(.colon) {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { prefersReducedMotion, timeScale } from "../scripts/motion";
+
+  for (const clock of document.querySelectorAll<HTMLElement>("[data-clock]")) {
+    const timeZone = clock.dataset.tz!;
+    const place = clock.dataset.place!;
+    const timeEl = clock.querySelector<HTMLElement>("[data-clock-time]")!;
+    const periodEl = clock.querySelector<HTMLElement>("[data-clock-period]")!;
+    const labelEl = clock.querySelector<HTMLElement>("[data-clock-label]")!;
+
+    const format = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const offsetFormat = new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "shortOffset" });
+
+    let previous = "";
+
+    const render = (text: string) => {
+      timeEl.replaceChildren(
+        ...[...text].map((char) => {
+          const slot = document.createElement("span");
+          slot.className = char === ":" ? "slot colon" : "slot";
+          const inner = document.createElement("span");
+          inner.textContent = char;
+          slot.append(inner);
+          return slot;
+        }),
+      );
+    };
+
+    const roll = (text: string) => {
+      const slots = timeEl.children;
+      [...text].forEach((char, index) => {
+        const slot = slots[index] as HTMLElement;
+        const current = slot.lastElementChild as HTMLElement;
+        if (current.textContent === char) return;
+
+        const next = document.createElement("span");
+        next.textContent = char;
+        next.style.position = "absolute";
+        next.style.inset = "0";
+        slot.append(next);
+
+        const options = {
+          duration: 620 * timeScale(),
+          delay: (text.length - index) * 45 * timeScale(),
+          easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+          fill: "backwards" as const,
+        };
+        current.animate({ translate: ["0 0", "0 -100%"], opacity: [1, 0] }, { ...options, fill: "forwards" });
+        next
+          .animate({ translate: ["0 100%", "0 0"], opacity: [0, 1] }, options)
+          .finished.then(() => {
+            current.remove();
+            next.removeAttribute("style");
+          })
+          .catch(() => {});
+      });
+    };
+
+    const tick = () => {
+      const now = new Date();
+      const parts = format.formatToParts(now);
+      const time = parts
+        .filter((part) => part.type === "hour" || part.type === "minute" || part.type === "literal")
+        .map((part) => part.value)
+        .join("")
+        .trim();
+      const period = parts.find((part) => part.type === "dayPeriod")?.value ?? "";
+
+      if (time !== previous) {
+        if (!previous || previous.length !== time.length || prefersReducedMotion()) render(time);
+        else roll(time);
+        previous = time;
+        periodEl.textContent = period;
+
+        const offset =
+          offsetFormat.formatToParts(now).find((part) => part.type === "timeZoneName")?.value ?? "";
+        const label = `Local time in ${place}: ${time} ${period} (${offset})`;
+        labelEl.textContent = label;
+        clock.title = label;
+      }
+    };
+
+    tick();
+    // Tick on the second boundary so minute changes land on time.
+    setTimeout(() => {
+      tick();
+      setInterval(tick, 1000);
+    }, 1000 - (Date.now() % 1000));
+  }
+</script>

@@ -1,0 +1,22 @@
+---
+// Numbered section shell: "01 —— Featured".
+interface Props {
+  index: number;
+  title: string;
+  id?: string;
+  class?: string;
+}
+
+const { index, title, id, class: className } = Astro.props;
+const number = String(index).padStart(2, "0");
+const headingId = `${id ?? title.toLowerCase().replace(/\W+/g, "-")}-title`;
+---
+
+<section class={className} id={id} aria-labelledby={headingId}>
+  <h2 class="eyebrow" id={headingId}>
+    <span class="index" data-reveal="fade" aria-hidden="true">{number}</span>
+    <span class="rule" data-reveal="line" aria-hidden="true"></span>
+    <span data-reveal="fade">{title}</span>
+  </h2>
+  <slot />
+</section>

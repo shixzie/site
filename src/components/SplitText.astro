@@ -1,0 +1,34 @@
+---
+// Splits text into per-character masks at build time (no layout work in the
+// browser) and animates them with the reveal system. Screen readers get the
+// plain string; the split copy is hidden from the accessibility tree.
+interface Props {
+  text: string;
+  class?: string;
+}
+
+const { text, class: className } = Astro.props;
+
+let index = 0;
+const words = text.split(" ").map((word) => [...word].map((char) => ({ char, index: index++ })));
+---
+
+<span class={className} data-reveal="chars">
+  <span class="sr-only">{text}</span>
+  <span aria-hidden="true">
+    {
+      words.map((chars, wordIndex) => (
+        <>
+          {wordIndex > 0 && " "}
+          <span class="chars-word">
+            {chars.map(({ char, index }) => (
+              <span class="char">
+                <span style={`--c:${index}`}>{char}</span>
+              </span>
+            ))}
+          </span>
+        </>
+      ))
+    }
+  </span>
+</span>

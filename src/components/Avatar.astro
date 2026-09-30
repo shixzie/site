@@ -1,0 +1,228 @@
+---
+import { Image } from "astro:assets";
+import { avatar, profile } from "../config";
+
+interface Props {
+  size?: number;
+  class?: string;
+}
+
+const { size = 76, class: className } = Astro.props;
+const { eyes } = avatar;
+---
+
+<div class:list={["avatar", className]} style={`--size:${size}px`} data-avatar data-reveal="pop">
+  <Image
+    src={avatar.image}
+    alt={`${profile.name}'s avatar`}
+    width={size}
+    height={size}
+    densities={[1, 2, 3]}
+    loading="eager"
+    fetchpriority="high"
+  />
+  {
+    eyes && (
+      <svg class="eyes" viewBox={`0 0 ${eyes.viewBox} ${eyes.viewBox}`} aria-hidden="true">
+        <g class="look" data-avatar-look>
+          {eyes.positions.map(([x, y]) => (
+            <g transform={`translate(${x} ${y}) rotate(${eyes.angle})`}>
+              <rect
+                class="open"
+                data-avatar-eye
+                x={-eyes.width / 2}
+                y={-eyes.height / 2}
+                width={eyes.width}
+                height={eyes.height}
+                rx={eyes.width / 2}
+                fill={eyes.color}
+              />
+              <path
+                class="happy"
+                d="M-17 7Q0-15 17 7"
+                fill="none"
+                stroke={eyes.color}
+                stroke-width="10"
+                stroke-linecap="round"
+              />
+            </g>
+          ))}
+        </g>
+      </svg>
+    )
+  }
+</div>
+
+<style>
+  .avatar {
+    position: relative;
+    flex: none;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    overflow: hidden;
+    background: #303032;
+    isolation: isolate;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .avatar :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .eyes {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .open,
+  .happy {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      scale var(--dur-2) var(--ease-out),
+      opacity var(--dur-1) var(--ease-out),
+      translate var(--dur-spring) var(--ease-spring);
+  }
+
+  .happy {
+    opacity: 0;
+    scale: 0.5;
+    translate: 0 6px;
+  }
+
+  .avatar.is-happy .open {
+    scale: 1 0.12;
+    opacity: 0;
+  }
+
+  .avatar.is-happy .happy {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+    transition:
+      scale var(--dur-spring) var(--ease-bounce),
+      opacity var(--dur-1) var(--ease-out),
+      translate var(--dur-spring) var(--ease-spring);
+  }
+</style>
+
+<script>
+  import {
+    Spring,
+    createLoop,
+    hasFinePointer,
+    prefersReducedMotion,
+    timeScale,
+    watchVisibility,
+  } from "../scripts/motion";
+
+  const LOOK_RANGE = { x: 16, y: 11 }; // in the avatar's 400px image space
+
+  for (const avatar of document.querySelectorAll<HTMLElement>("[data-avatar]")) {
+    const look = avatar.querySelector<SVGGElement>("[data-avatar-look]");
+    const eyes = [...avatar.querySelectorAll<SVGElement>("[data-avatar-eye]")];
+    if (!look || prefersReducedMotion()) continue;
+
+    let visible = true;
+    watchVisibility(avatar, (isVisible) => (visible = isVisible));
+
+    /* --- eyes follow the cursor --------------------------------------- */
+    const x = new Spring(0, 140, 14);
+    const y = new Spring(0, 140, 14);
+    const loop = createLoop((dt) => {
+      x.step(dt);
+      y.step(dt);
+      look.style.transform = `translate(${x.value.toFixed(2)}px, ${y.value.toFixed(2)}px)`;
+      return !(x.settled && y.settled);
+    });
+
+    const lookAt = (clientX: number, clientY: number) => {
+      const rect = avatar.getBoundingClientRect();
+      const dx = clientX - (rect.left + rect.width / 2);
+      const dy = clientY - (rect.top + rect.height / 2);
+      const distance = Math.hypot(dx, dy) || 1;
+      const reach = Math.min(distance / 320, 1); // full deflection ~320px away
+      x.target = (dx / distance) * LOOK_RANGE.x * reach;
+      y.target = (dy / distance) * LOOK_RANGE.y * reach;
+      loop.wake();
+    };
+
+    const center = () => {
+      x.target = 0;
+      y.target = 0;
+      loop.wake();
+    };
+
+    if (hasFinePointer()) {
+      window.addEventListener("pointermove", (event) => visible && lookAt(event.clientX, event.clientY), {
+        passive: true,
+      });
+      document.documentElement.addEventListener("pointerleave", center);
+      window.addEventListener("blur", center);
+    } else {
+      // Touch: glance around every now and then instead.
+      const glance = () => {
+        if (visible && !document.hidden) {
+          x.target = (Math.random() * 2 - 1) * LOOK_RANGE.x;
+          y.target = (Math.random() * 2 - 1) * LOOK_RANGE.y * 0.6;
+          loop.wake();
+          window.setTimeout(center, 900 * timeScale());
+        }
+        window.setTimeout(glance, (3500 + Math.random() * 3000) * timeScale());
+      };
+      window.setTimeout(glance, 2500);
+    }
+
+    /* --- blinking ----------------------------------------------------- */
+    const blink = () => {
+      if (!avatar.classList.contains("is-happy")) {
+        for (const eye of eyes) {
+          eye.animate([{ scale: "1 1" }, { scale: "1 0.08", offset: 0.4 }, { scale: "1 1" }], {
+            duration: 190 * timeScale(),
+            easing: "ease-in-out",
+          });
+        }
+      }
+    };
+
+    const scheduleBlink = () => {
+      window.setTimeout(
+        () => {
+          if (visible && !document.hidden) {
+            blink();
+            if (Math.random() < 0.22) window.setTimeout(blink, 260 * timeScale()); // double blink
+          }
+          scheduleBlink();
+        },
+        (2200 + Math.random() * 3800) * timeScale(),
+      );
+    };
+    scheduleBlink();
+
+    /* --- delight: smile on hover, squish on click ----------------------- */
+    avatar.addEventListener("pointerenter", () => avatar.classList.add("is-happy"));
+    avatar.addEventListener("pointerleave", () => avatar.classList.remove("is-happy"));
+    avatar.addEventListener("click", () => {
+      avatar.animate(
+        [
+          { scale: "1 1" },
+          { scale: "1.12 0.86", offset: 0.22 },
+          { scale: "0.92 1.1", offset: 0.48 },
+          { scale: "1.04 0.97", offset: 0.72 },
+          { scale: "1 1" },
+        ],
+        { duration: 620 * timeScale(), easing: "ease-out" },
+      );
+    });
+  }
+</script>

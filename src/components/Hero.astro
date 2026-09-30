@@ -1,0 +1,198 @@
+---
+import { intro, profile } from "../config";
+import Avatar from "./Avatar.astro";
+import Flag from "./Flag.astro";
+import Icon from "./Icon.astro";
+import Roller from "./Roller.astro";
+import SplitText from "./SplitText.astro";
+
+let wordIndex = 0;
+const introWords = intro.before.split(" ").map((word) => ({ word, index: wordIndex++ }));
+wordIndex++; // the rolling word
+const afterWords = intro.after ? intro.after.split(" ").map((word) => ({ word, index: wordIndex++ })) : [];
+---
+
+<section class="hero" aria-label="Introduction">
+  <div class="identity">
+    <Avatar />
+    <div class="who">
+      <h1 class="name">
+        <SplitText text={profile.name} />
+        <span class="handle" data-reveal="fade">@{profile.handle}</span>
+      </h1>
+      <p class="role" data-reveal="blur">
+        {profile.role}
+        <Flag code={profile.flag} label={profile.location} />
+      </p>
+    </div>
+    <a class="pill pill--ink contact" href={`mailto:${profile.email}`} data-magnetic="0.3" data-reveal="pop">
+      <Icon name="mail" />
+      <span>Contact</span>
+    </a>
+  </div>
+
+  <p class="intro" data-reveal="words">
+    {
+      introWords.map(({ word, index }) => (
+        <>
+          <span class="word" style={`--w:${index}`}>
+            {word}
+          </span>{" "}
+        </>
+      ))
+    }
+    <br class="desktop-break" />
+    <span class="word" style={`--w:${introWords.length}`}>
+      <Roller words={intro.words} />
+    </span>
+    {
+      afterWords.map(({ word, index }) => (
+        <>
+          {" "}
+          <span class="word" style={`--w:${index}`}>
+            {word}
+          </span>
+        </>
+      ))
+    }
+  </p>
+
+  {
+    profile.available && (
+      <p class="status" data-reveal>
+        <span class="pulse" aria-hidden="true" />
+        {profile.availableLabel}
+      </p>
+    )
+  }
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    gap: 44px;
+  }
+
+  .identity {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .who {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 10px;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .handle {
+    color: var(--ink-3);
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .role {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    color: var(--ink-2);
+  }
+
+  .contact {
+    flex: none;
+  }
+
+  .intro {
+    max-width: 21em;
+    color: var(--ink-2);
+    font-size: clamp(26px, 5.2vw, 36px);
+    font-weight: 450;
+    letter-spacing: -0.028em;
+    line-height: 1.22;
+    text-wrap: pretty;
+  }
+
+  .desktop-break {
+    display: none;
+  }
+
+  @media (width > 560px) {
+    .desktop-break {
+      display: inline;
+    }
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    justify-self: start;
+    padding: 9px 16px 9px 14px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--green) 12%, transparent);
+    color: color-mix(in oklab, var(--green) 70%, var(--ink));
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .pulse {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  .pulse::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: inherit;
+    animation: pulse calc(2.2s * var(--slowmo)) var(--ease-out) infinite;
+  }
+
+  @keyframes pulse {
+    from {
+      opacity: 0.7;
+      scale: 1;
+    }
+    70%,
+    to {
+      opacity: 0;
+      scale: 3.2;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse::after {
+      animation: none;
+    }
+  }
+
+  @media (width <= 520px) {
+    .identity {
+      flex-wrap: wrap;
+    }
+
+    .contact {
+      width: 100%;
+    }
+
+    .hero {
+      gap: 36px;
+    }
+  }
+</style>

@@ -1,0 +1,75 @@
+---
+import Avatar from "../components/Avatar.astro";
+import Footer from "../components/Footer.astro";
+import Icon from "../components/Icon.astro";
+import Topbar from "../components/Topbar.astro";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="404 — Page not found" noindex>
+  <div id="top"></div>
+  <Topbar />
+  <main id="content" class="lost wrap">
+    <Avatar size={112} />
+    <h1 class="code" data-reveal="fade" data-lost-code>404</h1>
+    <p class="title" data-reveal="blur">This page wandered off.</p>
+    <p class="note muted" data-reveal>Even I can't find it — and I built the place.</p>
+    <a class="pill pill--ink home" href="/" data-magnetic="0.3" data-reveal="pop">
+      <span class="back" aria-hidden="true"><Icon name="arrow-right" /></span>
+      <span>Back home</span>
+    </a>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .lost {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    padding: 88px 0 120px;
+    text-align: center;
+  }
+
+  .code {
+    margin-top: 18px;
+    font-size: clamp(88px, 22vw, 168px);
+    font-weight: 650;
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+
+  .title {
+    font-size: 24px;
+    font-weight: 550;
+    letter-spacing: -0.02em;
+  }
+
+  .note {
+    max-width: 34ch;
+  }
+
+  .home {
+    margin-top: 22px;
+  }
+
+  .back {
+    display: grid;
+    rotate: 180deg;
+    transition: translate var(--dur-spring) var(--ease-spring);
+  }
+
+  .home:hover .back {
+    translate: -3px 0;
+  }
+</style>
+
+<script>
+  import { rollTo } from "../scripts/rolling";
+
+  const code = document.querySelector<HTMLElement>("[data-lost-code]");
+  if (code) {
+    const value = Number(code.textContent);
+    document.fonts.ready.then(() => rollTo(code, value));
+  }
+</script>

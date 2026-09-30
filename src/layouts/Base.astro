@@ -1,0 +1,97 @@
+---
+import { Font } from "astro:assets";
+import { profile, site, socials } from "../config";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const { title = site.title, description = site.description, noindex = false } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL("/og.png", Astro.site);
+
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: profile.name,
+  alternateName: profile.handle,
+  url: Astro.site?.href,
+  image: new URL("/apple-touch-icon.png", Astro.site).href,
+  jobTitle: profile.role,
+  description: profile.bio,
+  address: { "@type": "PostalAddress", addressCountry: profile.location },
+  sameAs: socials.map((social) => social.href),
+};
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+
+    <meta name="author" content={profile.name} />
+    <meta name="theme-color" content="#fbf7f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#151413" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content={Astro.site?.hostname} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${profile.name} — ${profile.bio}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content={`@${profile.handle}`} />
+    <meta name="twitter:creator" content={`@${profile.handle}`} />
+
+    <Font cssVariable="--font-sans" preload />
+    <Font cssVariable="--font-serif" preload={[{ style: "italic" }]} />
+    <Font cssVariable="--font-mono" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(person)}></script>
+
+    <!-- Runs before first paint: opt into JS-driven motion + restore the saved theme. -->
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        root.classList.add("js");
+        try {
+          const theme = localStorage.getItem("theme");
+          if (theme === "light" || theme === "dark") {
+            root.dataset.theme = theme;
+            const color = theme === "dark" ? "#151413" : "#fbf7f0";
+            for (const meta of document.querySelectorAll('meta[name="theme-color"]')) meta.content = color;
+          }
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <slot />
+    <script>
+      import { initReveal } from "../scripts/reveal";
+      import { initMagnetic, initSpotlight } from "../scripts/pointer";
+
+      initReveal();
+      initSpotlight();
+      initMagnetic();
+    </script>
+  </body>
+</html>

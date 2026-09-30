@@ -1,0 +1,75 @@
+---
+import { profile } from "../config";
+import Clock from "./Clock.astro";
+import Icon from "./Icon.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+---
+
+<header class="topbar wrap" data-reveal="fade">
+  <a class="mark" href="/" aria-label={`${profile.name} — home`}>
+    {profile.handle}<span class="dot" aria-hidden="true"></span>
+  </a>
+  <div class="right">
+    <span class="place">
+      <Icon name="pin" size={14} />
+      <span class="place-name">{profile.location}</span>
+      <Clock />
+    </span>
+    <ThemeToggle />
+  </div>
+</header>
+
+<style>
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 28px;
+  }
+
+  .mark {
+    display: inline-flex;
+    align-items: baseline;
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    margin-left: 2px;
+    border-radius: 50%;
+    background: var(--accent);
+    transition: translate var(--dur-bounce) var(--ease-bounce);
+  }
+
+  .mark:hover .dot {
+    translate: 0 -8px;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .place {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink-3);
+    font-size: 13px;
+  }
+
+  .place-name {
+    margin-right: 4px;
+  }
+
+  @media (width <= 420px) {
+    .place-name {
+      display: none;
+    }
+  }
+</style>

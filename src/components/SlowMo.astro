@@ -1,0 +1,84 @@
+---
+// A motion designer's favourite debugging tool, as a feature: slows every
+// animation on the page (CSS via --slowmo, JS via the shared time scale).
+---
+
+<button class="slowmo js-only" type="button" role="switch" aria-checked="false" data-slowmo>
+  <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+  <span>Slow motion</span>
+</button>
+
+<style>
+  .slowmo {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 36px;
+    padding: 0 14px 0 8px;
+    border-radius: 999px;
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 500;
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out);
+  }
+
+  .slowmo:hover {
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  .track {
+    position: relative;
+    width: 30px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    transition: background-color var(--dur-2) var(--ease-out);
+  }
+
+  .thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+    transition:
+      translate var(--dur-spring) var(--ease-spring),
+      scale var(--dur-spring) var(--ease-spring);
+  }
+
+  .slowmo:active .thumb {
+    scale: 1.25 0.9;
+  }
+
+  .slowmo[aria-checked="true"] {
+    color: var(--ink);
+  }
+
+  .slowmo[aria-checked="true"] .track {
+    background: var(--accent);
+  }
+
+  .slowmo[aria-checked="true"] .thumb {
+    translate: 12px 0;
+  }
+</style>
+
+<script>
+  import { setTimeScale } from "../scripts/motion";
+
+  const SLOW = 5;
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-slowmo]")) {
+    button.addEventListener("click", () => {
+      const on = button.getAttribute("aria-checked") !== "true";
+      button.setAttribute("aria-checked", String(on));
+      setTimeScale(on ? SLOW : 1);
+    });
+  }
+</script>

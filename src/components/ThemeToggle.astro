@@ -1,0 +1,166 @@
+---
+// Sun ⇄ moon morph. The icon state is pure CSS (driven by the active color
+// scheme), so it's correct on first paint; JS only flips the theme and paints
+// the switch as a circle growing out of the button (View Transitions API).
+---
+
+<button class="toggle js-only" type="button" data-theme-toggle data-magnetic="0.35" aria-label="Toggle dark mode">
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <mask id="theme-toggle-bite">
+      <rect width="24" height="24" fill="#fff"></rect>
+      <circle class="bite" cx="18" cy="6.5" r="7.2" fill="#000"></circle>
+    </mask>
+    <circle class="core" cx="12" cy="12" r="9" fill="currentColor" mask="url(#theme-toggle-bite)"></circle>
+    <g class="rays" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <path d="M12 1.5v2M12 20.5v2M22.5 12h-2M3.5 12h-2M19.4 4.6 18 6M6 18l-1.4 1.4M19.4 19.4 18 18M6 6 4.6 4.6"></path>
+    </g>
+  </svg>
+</button>
+
+<style>
+  .toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--surface);
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      scale var(--dur-spring) var(--ease-spring);
+  }
+
+  .toggle:hover {
+    background: var(--surface-2);
+  }
+
+  .toggle:active {
+    scale: 0.9;
+  }
+
+  svg {
+    overflow: visible;
+  }
+
+  .core,
+  .bite,
+  .rays {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      transform var(--dur-spring) var(--ease-spring),
+      opacity var(--dur-2) var(--ease-out);
+  }
+
+  .rays {
+    transform-box: view-box;
+  }
+
+  /* light → sun */
+  .core {
+    transform: scale(0.55);
+  }
+
+  .bite {
+    transform: translate(9px, -9px);
+  }
+
+  /* dark → moon */
+  :global(:root[data-theme="dark"]) .core {
+    transform: none;
+  }
+
+  :global(:root[data-theme="dark"]) .bite {
+    transform: none;
+  }
+
+  :global(:root[data-theme="dark"]) .rays {
+    transform: rotate(-60deg) scale(0.4);
+    opacity: 0;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .core {
+      transform: none;
+    }
+
+    :global(:root:not([data-theme="light"])) .bite {
+      transform: none;
+    }
+
+    :global(:root:not([data-theme="light"])) .rays {
+      transform: rotate(-60deg) scale(0.4);
+      opacity: 0;
+    }
+  }
+
+  .toggle:hover .rays {
+    transform: rotate(45deg);
+  }
+</style>
+
+<script>
+  import { prefersReducedMotion, timeScale } from "../scripts/motion";
+
+  const COLORS = { light: "#fbf7f0", dark: "#151413" } as const;
+  const root = document.documentElement;
+  const systemDark = matchMedia("(prefers-color-scheme: dark)");
+
+  const currentTheme = () =>
+    (root.dataset.theme as "light" | "dark" | undefined) ?? (systemDark.matches ? "dark" : "light");
+
+  function apply(theme: "light" | "dark") {
+    root.dataset.theme = theme;
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {}
+    for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+      meta.content = COLORS[theme];
+    }
+    window.dispatchEvent(new CustomEvent("theme:change", { detail: theme }));
+  }
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")) {
+    const label = () => `Switch to ${currentTheme() === "dark" ? "light" : "dark"} mode`;
+    button.setAttribute("aria-label", label());
+
+    button.addEventListener("click", async () => {
+      const next = currentTheme() === "dark" ? "light" : "dark";
+
+      if (!document.startViewTransition || prefersReducedMotion()) {
+        apply(next);
+        button.setAttribute("aria-label", label());
+        return;
+      }
+
+      const rect = button.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+
+      root.classList.add("theme-vt");
+      const transition = document.startViewTransition(() => apply(next));
+      button.setAttribute("aria-label", label());
+
+      try {
+        await transition.ready;
+        root.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+          {
+            duration: 760 * timeScale(),
+            easing: "cubic-bezier(0.65, 0, 0.35, 1)",
+            pseudoElement: "::view-transition-new(root)",
+          },
+        );
+        await transition.finished;
+      } finally {
+        root.classList.remove("theme-vt");
+      }
+    });
+  }
+
+  // Follow the OS setting live until the visitor picks a theme explicitly.
+  systemDark.addEventListener("change", () => {
+    if (!root.dataset.theme) window.dispatchEvent(new CustomEvent("theme:change", { detail: currentTheme() }));
+  });
+</script>

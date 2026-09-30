@@ -1,0 +1,234 @@
+---
+import { profile, socials } from "../config";
+import Icon from "./Icon.astro";
+---
+
+<div class="contact">
+  <p class="lead" data-reveal>
+    The quickest way to reach me is email — I read everything, and I usually reply within a day or two.
+  </p>
+
+  <ul class="socials" role="list">
+    {
+      socials.map((social) => (
+        <li data-reveal>
+          <a class="pill" href={social.href} target="_blank" rel="me noreferrer">
+            <Icon name={social.icon} />
+            <span>{social.label}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="mail" data-reveal>
+    <a class="address" href={`mailto:${profile.email}`}>
+      <Icon name="mail" />
+      <span class="link">{profile.email}</span>
+    </a>
+    <button class="copy js-only" type="button" data-copy={profile.email} aria-label="Copy email address">
+      <span class="copy-icon" aria-hidden="true">
+        <Icon name="copy" size={16} class="i-copy" />
+        <Icon name="check" size={16} class="i-check" />
+      </span>
+      <span class="copy-label" aria-hidden="true">
+        <span class="idle">Copy</span>
+        <span class="done">Copied</span>
+      </span>
+    </button>
+    <span class="sr-only" aria-live="polite" data-copy-status></span>
+  </div>
+</div>
+
+<style>
+  .contact {
+    display: grid;
+    gap: 22px;
+  }
+
+  .lead {
+    max-width: 46ch;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .socials {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .socials li {
+    display: flex;
+  }
+
+  .socials .pill {
+    width: 100%;
+    padding: 0 12px;
+    border-radius: var(--radius-inner);
+  }
+
+  .socials li:first-child .pill {
+    border-radius: 24px var(--radius-inner) var(--radius-inner) 24px;
+  }
+
+  .socials li:last-child .pill {
+    border-radius: var(--radius-inner) 24px 24px var(--radius-inner);
+  }
+
+  .socials li .pill:hover,
+  .socials li .pill:focus-visible {
+    border-radius: 999px;
+  }
+
+  .mail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+  }
+
+  .address {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding-block: 4px;
+    color: var(--ink-2);
+    font-size: 15px;
+    transition: color var(--dur-2) var(--ease-out);
+  }
+
+  .address:hover {
+    color: var(--ink);
+  }
+
+  .address:hover .link,
+  .address:focus-visible .link {
+    background-position: 0 100%;
+    background-size: 100% 1px;
+  }
+
+  .address :global(svg) {
+    color: var(--ink-3);
+  }
+
+  .copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 13px 0 11px;
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 500;
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out),
+      scale var(--dur-spring) var(--ease-spring);
+  }
+
+  .copy:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  .copy:active {
+    scale: 0.94;
+  }
+
+  .copy-icon,
+  .copy-label {
+    display: grid;
+  }
+
+  .copy-icon > :global(*),
+  .copy-label > * {
+    grid-area: 1 / 1;
+  }
+
+  .copy-label {
+    height: 1lh;
+    overflow: hidden;
+  }
+
+  .copy-icon :global(svg) {
+    transition:
+      scale var(--dur-spring) var(--ease-spring),
+      opacity var(--dur-1) var(--ease-out);
+  }
+
+  .copy-icon :global(.i-check) {
+    opacity: 0;
+    scale: 0.4;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    transition:
+      stroke-dashoffset var(--dur-3) var(--ease-out-expo),
+      scale var(--dur-spring) var(--ease-bounce),
+      opacity var(--dur-1) var(--ease-out);
+  }
+
+  .copy-label > span {
+    transition:
+      translate var(--dur-3) var(--ease-out-expo),
+      opacity var(--dur-2) var(--ease-out);
+  }
+
+  .copy-label .done {
+    translate: 0 100%;
+    opacity: 0;
+  }
+
+  .copy.is-done {
+    color: var(--green);
+  }
+
+  .copy.is-done .copy-icon :global(.i-copy) {
+    opacity: 0;
+    scale: 0.4;
+  }
+
+  .copy.is-done .copy-icon :global(.i-check) {
+    opacity: 1;
+    scale: 1;
+    stroke-dashoffset: 0;
+  }
+
+  .copy.is-done .idle {
+    translate: 0 -100%;
+    opacity: 0;
+  }
+
+  .copy.is-done .done {
+    translate: none;
+    opacity: 1;
+  }
+</style>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+    const status = button.parentElement?.querySelector<HTMLElement>("[data-copy-status]");
+    let timer = 0;
+
+    button.addEventListener("click", async () => {
+      const value = button.dataset.copy!;
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch {
+        // Clipboard blocked: select the address so it can be copied manually.
+        const text = button.parentElement?.querySelector(".address span");
+        if (text) window.getSelection()?.selectAllChildren(text);
+        return;
+      }
+      button.classList.add("is-done");
+      if (status) status.textContent = "Email address copied to clipboard";
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        button.classList.remove("is-done");
+        if (status) status.textContent = "";
+      }, 2000);
+    });
+  }
+</script>
