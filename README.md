@@ -78,6 +78,9 @@ In the Cloudflare dashboard, go to **Workers & Pages → Create → Import a rep
 
 - Build command: `npm run build`
 - Deploy command: `npx wrangler deploy`
+- Non-production branch deploy command: `npx wrangler preview`
+
+Each pull request then gets a public preview at `https://<branch>-shixzie-site.<subdomain>.workers.dev`, linked from the PR. Previews are marked `noindex`. That needs the `previews` block and `preview_urls: true` in `wrangler.jsonc`, and `preview_urls` only takes effect after a production deploy.
 
 > Prefer to keep the www redirect out of the Worker? Remove `www.shixzie.com` from `routes`, add a proxied DNS record for `www`, and create a **Redirect Rule** (www → apex) instead. The Worker's redirect then simply never runs.
 

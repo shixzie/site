@@ -22,5 +22,12 @@
   ],
   "observability": {
     "enabled": true
-  }
+  },
+  // Workers Builds runs `wrangler preview` for pull requests, which requires
+  // this block. Empty means previews inherit the settings above.
+  "previews": {},
+  // Public preview links at https://<preview>-shixzie-site.<subdomain>.workers.dev
+  // (served noindex by worker/index.ts). Production stays on the custom
+  // domains only. Takes effect on the next production `wrangler deploy`.
+  "preview_urls": true
 }
