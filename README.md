@@ -20,6 +20,7 @@ Almost everything lives in **`src/config.ts`**: name, role, bio, location and ti
 
 - **Featured project.** Set `repo: "owner/name"` to show live GitHub stars and forks. They're fetched in the browser, cached per session, and roll into place like a slot machine.
 - **Avatar.** `src/assets/avatar-base.png` is the GitHub avatar with the eyes painted out. The eyes are redrawn as SVG so they can follow the cursor, blink, and smile on hover. To use a photo instead, point `avatar.image` at it and set `avatar.eyes` to `null`. `src/assets/avatar.png` is the untouched original.
+- **Ask an AI.** The prompt is built from your profile, featured project and socials in `src/components/AskAI.astro`, so it stays in sync with the config.
 - **Social images.** `public/og.png` (1200×630), `public/favicon.svg`, `public/favicon.ico` and `public/apple-touch-icon.png` are static files. If you change your name or tagline, replace `og.png` too.
 
 ## Motion system
@@ -45,6 +46,7 @@ Signature moments:
 - **Theme toggle.** A sun ⇄ moon morph, with the new theme revealed as a circle growing out of the button (View Transitions API).
 - **Footer wordmark.** Each letter's variable-font weight swells as the cursor gets near.
 - **Slow motion.** The footer switch multiplies every duration by 5, CSS (`--slowmo`) and JS alike, so you can inspect the choreography.
+- **Ask an AI.** A floating button, fronted by a mini version of the avatar, slides in after the first scroll. It opens a popover with ChatGPT, Claude, Gemini (via Google AI Mode) and Perplexity, each prefilled with a question about you that points at `/llms.txt`, plus a "copy the prompt" fallback. It's built on the native Popover API, so it works without JavaScript.
 
 Accessibility: everything respects `prefers-reduced-motion`. Reveals become plain fades, and ambient loops (marquee, dot field, rolling words, blinking) stop. Split or duplicated text is hidden from screen readers in favour of the plain copy. If JavaScript never loads, a CSS failsafe shows all content after 2.5 s.
 
