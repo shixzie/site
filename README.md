@@ -16,7 +16,7 @@ Requires Node 22.12+.
 
 ## Editing content
 
-Almost everything lives in **`src/config.ts`**: name, role, bio, location and time zone, email, the rolling words in the intro, the featured project, other works, the toolbox marquee, the timeline and social links. Entries marked ✏️ are starter content, so swap them for your own.
+Almost everything lives in **`src/config.ts`**: name, role, bio, location and time zone, email, the rolling words in the intro, the featured project, other works, the toolbox marquee, work experience, the timeline and social links. Entries marked ✏️ are starter content, so swap them for your own.
 
 - **Featured project.** Set `repo: "owner/name"` to show live GitHub stars and forks. They're fetched in the browser, cached per session, and roll into place like a slot machine.
 - **Avatar.** `src/assets/avatar-base.png` is the GitHub avatar with the eyes painted out. The eyes are redrawn as SVG so they can follow the cursor, blink, and smile on hover. To use a photo instead, point `avatar.image` at it and set `avatar.eyes` to `null`. `src/assets/avatar.png` is the untouched original.
@@ -78,6 +78,9 @@ In the Cloudflare dashboard, go to **Workers & Pages → Create → Import a rep
 
 - Build command: `npm run build`
 - Deploy command: `npx wrangler deploy`
+- Non-production branch deploy command: `npx wrangler preview`
+
+Each pull request then gets a public preview at `https://<branch>-shixzie-site.<subdomain>.workers.dev`, linked from the PR. Previews are marked `noindex`. That needs the `previews` block and `preview_urls: true` in `wrangler.jsonc`, and `preview_urls` only takes effect after a production deploy.
 
 > Prefer to keep the www redirect out of the Worker? Remove `www.shixzie.com` from `routes`, add a proxied DNS record for `www`, and create a **Redirect Rule** (www → apex) instead. The Worker's redirect then simply never runs.
 

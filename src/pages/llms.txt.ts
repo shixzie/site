@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { featured, profile, socials, timeline, works } from "../config";
+import { experience, featured, profile, socials, timeline, toolbox, works } from "../config";
 
 // Plain-text summary for LLM crawlers (https://llmstxt.org).
 export const GET: APIRoute = ({ site }) => {
@@ -15,6 +15,20 @@ export const GET: APIRoute = ({ site }) => {
     "## Other works",
     "",
     ...works.map((work) => `- [${work.title}](${work.href}): ${work.description}`),
+    "",
+    "## Experience",
+    "",
+    ...experience.flatMap((job) => [
+      `### ${job.role}, [${job.company}](${job.href}) (${job.period})`,
+      "",
+      job.about,
+      "",
+      ...job.highlights.map((highlight) => `- ${highlight}`),
+      "",
+    ]),
+    "## Toolbox",
+    "",
+    toolbox.join(", "),
     "",
     "## Background",
     "",
