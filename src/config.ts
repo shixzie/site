@@ -6,7 +6,7 @@ import avatarBase from "./assets/avatar-base.png";
 export const profile = {
   name: "Juan Alvarez",
   handle: "shixzie",
-  role: "Software engineer", // ✏️
+  role: "AI Engineer",
   bio: "Just a normal guy~",
   location: "Colombia",
   flag: "co" as const,
@@ -101,6 +101,6 @@ export const socials = [
 
 export const site = {
   title: `${profile.name} (@${profile.handle})`,
-  description: `${profile.name} — ${profile.role.toLowerCase()} from ${profile.location}. ${profile.bio}`,
+  description: `${profile.name}, ${profile.role} from ${profile.location}. ${profile.bio}`,
   lang: "en",
 };
