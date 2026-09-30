@@ -6,7 +6,7 @@ import avatarBase from "./assets/avatar-base.png";
 export const profile = {
   name: "Juan Alvarez",
   handle: "shixzie",
-  role: "Software engineer", // ✏️
+  role: "AI Engineer",
   bio: "Just a normal guy~",
   location: "Colombia",
   flag: "co" as const,
@@ -20,7 +20,7 @@ export const profile = {
 /** The big intro line: `${before} <rolling word> ${after}` */
 export const intro = {
   before: "Just a normal guy~ who likes building",
-  words: ["thoughtful interfaces", "fast backends", "developer tools", "tiny experiments"], // ✏️
+  words: ["thoughtful interfaces", "privacy-first apps", "developer tools", "tiny experiments"], // ✏️
   after: "for the web.",
 };
 
@@ -46,50 +46,50 @@ export const avatar = {
 };
 
 export const featured = {
-  // ✏️ Your best project. `repo` (owner/name) enables live GitHub stars & forks.
-  title: "shixzie.com",
+  // Your best project. `repo` (owner/name) enables live GitHub stars & forks.
+  title: "RealPDF",
   description:
-    "This very site. Astro, a hand-tuned motion system with no UI framework, served from Cloudflare's edge.",
-  href: "https://github.com/shixzie/site",
-  repo: "shixzie/site",
-  tags: ["Astro", "TypeScript", "Cloudflare Workers"],
+    "A full PDF editor that runs entirely in your browser: edit text in place, fill forms, convert Office files and sign with real certificates. Your documents never leave your device.",
+  href: "https://realpdf.app",
+  repo: "shixzie/realpdf",
+  tags: ["React", "pdf.js", "WebCrypto", "Cloudflare Workers"],
 };
 
 export const works = [
-  // ✏️
   {
-    title: "Gists",
-    description: "Snippets, experiments and notes-to-self.",
-    href: "https://gist.github.com/shixzie",
-    meta: "GitHub Gist",
+    title: "Factory on Rails",
+    description:
+      "A software factory on Railway: describe a change, and a coding agent does the work in a sandbox and opens a pull request.",
+    href: "https://github.com/shixzie/factory-on-rails",
+    meta: "TypeScript · Effect · Railway",
   },
   {
-    title: "Open source",
-    description: "Everything else I've published lives here.",
+    title: "More on GitHub",
+    description: "Everything else I've open-sourced, experiments included.",
     href: "https://github.com/shixzie?tab=repositories",
-    meta: "GitHub",
+    meta: "github.com/shixzie",
   },
 ];
 
 /** Scrolling marquee between sections. */
 export const toolbox = [
-  // ✏️
   "TypeScript",
-  "Go",
-  "Astro",
-  "Cloudflare",
-  "Node.js",
+  "React",
+  "Effect",
+  "Next.js",
+  "Cloudflare Workers",
+  "Railway",
   "PostgreSQL",
-  "Docker",
-  "Figma",
-  "Linux",
-  "Git",
+  "WebAssembly",
+  "MCP",
+  "Astro",
 ];
 
 export const timeline = [
-  // ✏️ Newest first.
-  { when: "Now", what: "Writing code, sweating the details, learning something new every week." },
-  { when: "2026", what: "Launched shixzie.com — a small home on the internet." },
+  // Newest first.
+  { when: "Now", what: "Building RealPDF and Factory on Rails in the open." },
+  { when: "2026 Sep", what: "Started Factory on Rails, a software factory where coding agents open the pull requests." },
+  { when: "2026 Sep", what: "Launched RealPDF: edit, sign and convert PDFs without uploading them anywhere." },
   { when: "2016", what: "Opened a GitHub account and started building in public." },
 ];
 
@@ -101,6 +101,6 @@ export const socials = [
 
 export const site = {
   title: `${profile.name} (@${profile.handle})`,
-  description: `${profile.name} — ${profile.role.toLowerCase()} from ${profile.location}. ${profile.bio}`,
+  description: `${profile.name}, ${profile.role} from ${profile.location}. ${profile.bio}`,
   lang: "en",
 };

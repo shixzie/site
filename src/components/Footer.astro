@@ -31,6 +31,13 @@ const year = new Date().getFullYear();
     overflow: clip;
   }
 
+  /* Leave room for the floating "Ask an AI" button where it would cover this row. */
+  @media (width < 1120px) {
+    .footer {
+      padding-bottom: 96px;
+    }
+  }
+
   .row {
     display: flex;
     flex-wrap: wrap;
