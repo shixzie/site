@@ -123,7 +123,6 @@ export const socials = [
   { label: "GitHub", href: "https://github.com/shixzie", icon: "github" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/juanca-alvrz/", icon: "linkedin" },
   { label: "X", href: "https://x.com/shixzie", icon: "x" },
-  { label: "Gists", href: "https://gist.github.com/shixzie", icon: "code" },
 ] as const;
 
 export const site = {
