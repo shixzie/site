@@ -64,6 +64,20 @@ export const works = [
     meta: "TypeScript · Effect · Railway",
   },
   {
+    title: "FreeMix",
+    description:
+      "A cross-platform, GPU-first live production system written in Rust, aiming for vMix-level switching, mixing and streaming on any OS.",
+    href: "https://github.com/shixzie/freemix",
+    meta: "Rust · GPU · Live video",
+  },
+  {
+    title: "fuwa",
+    description:
+      "A chat app for communities: servers, channels, roles and channels shared across servers. Use the hosted instance or run your own.",
+    href: "https://fuwa.chat",
+    meta: "fuwa.chat",
+  },
+  {
     title: "More on GitHub",
     description: "Everything else I've open-sourced, experiments included.",
     href: "https://github.com/shixzie?tab=repositories",
@@ -75,6 +89,7 @@ export const works = [
 export const toolbox = [
   "TypeScript",
   "Go",
+  "Rust",
   "React",
   "Effect",
   "Next.js",
@@ -109,9 +124,10 @@ export const experience = [
 
 export const timeline = [
   // Newest first.
-  { when: "Now", what: "Building RealPDF and Factory on Rails in the open." },
+  { when: "Now", what: "Building RealPDF, Factory on Rails, FreeMix and fuwa." },
   { when: "2026 Sep", what: "Started Factory on Rails, a software factory where coding agents open the pull requests." },
   { when: "2026 Sep", what: "Launched RealPDF: edit, sign and convert PDFs without uploading them anywhere." },
+  { when: "2026 Jul", what: "Started FreeMix, a cross-platform live production system in Rust." },
   {
     when: "2019–2026",
     what: "Full-stack developer at Prisma Gestión Empresarial, the team behind Feria\u00a02\u00a0Ruedas: ran the web side of its events and built its Go and Node.js APIs.",

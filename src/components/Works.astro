@@ -25,6 +25,40 @@ import Icon from "./Icon.astro";
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  /* Two columns: round the grid's outer corners, whatever the card count. */
+  @media (width > 560px) {
+    .works > * {
+      border-radius: var(--radius-inner);
+    }
+
+    .works > :first-child {
+      border-top-left-radius: var(--radius);
+    }
+
+    .works > :nth-child(2) {
+      border-top-right-radius: var(--radius);
+    }
+
+    .works > :last-child {
+      border-bottom-right-radius: var(--radius);
+    }
+
+    .works > :nth-last-child(2):nth-child(odd) {
+      border-bottom-left-radius: var(--radius);
+    }
+
+    /* An odd last card spans the full row so the grid never leaves a hole. */
+    .works > :last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      border-bottom-left-radius: var(--radius);
+    }
+
+    .works > :hover,
+    .works > :focus-visible {
+      border-radius: var(--radius);
+    }
+  }
+
   .work {
     display: flex;
     flex-direction: column;
@@ -86,6 +120,10 @@ import Icon from "./Icon.astro";
   @media (width <= 560px) {
     .works {
       grid-template-columns: 1fr;
+    }
+
+    .works > * {
+      border-radius: var(--radius-inner);
     }
 
     .works > :first-child {
