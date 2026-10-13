@@ -47,21 +47,21 @@ export const avatar = {
 
 export const featured = {
   // Your best project. `repo` (owner/name) enables live GitHub stars & forks.
-  title: "RealPDF",
+  title: "Factory on Rails",
   description:
-    "A full PDF editor that runs entirely in your browser: edit text in place, fill forms, convert Office files and sign with real certificates. Your documents never leave your device.",
-  href: "https://realpdf.app",
-  repo: "shixzie/realpdf",
-  tags: ["React", "pdf.js", "WebCrypto", "Cloudflare Workers"],
+    "A software factory hosted entirely on Railway: describe a change, and Claude Code or Codex does the work in a disposable sandbox, opens a pull request and keeps fixing it until CI goes green.",
+  href: "https://factory.shixzie.com",
+  repo: "shixzie/factory-on-rails",
+  tags: ["TypeScript", "Effect", "Next.js", "Railway"],
 };
 
 export const works = [
   {
-    title: "Factory on Rails",
+    title: "RealPDF",
     description:
-      "A software factory on Railway: describe a change, and a coding agent does the work in a sandbox and opens a pull request.",
-    href: "https://github.com/shixzie/factory-on-rails",
-    meta: "TypeScript · Effect · Railway",
+      "A PDF editor that runs entirely in your browser: edit text, fill forms, convert Office files and sign. Your documents never leave your device.",
+    href: "https://realpdf.app",
+    meta: "React · pdf.js · WebCrypto",
   },
   {
     title: "FreeMix",
@@ -124,7 +124,7 @@ export const experience = [
 
 export const timeline = [
   // Newest first.
-  { when: "Now", what: "Building RealPDF, Factory on Rails, FreeMix and fuwa." },
+  { when: "Now", what: "Building Factory on Rails, RealPDF, FreeMix and fuwa." },
   { when: "2026 Sep", what: "Started Factory on Rails, a software factory where coding agents open the pull requests." },
   { when: "2026 Sep", what: "Launched RealPDF: edit, sign and convert PDFs without uploading them anywhere." },
   { when: "2026 Jul", what: "Started FreeMix, a cross-platform live production system in Rust." },
