@@ -1,6 +1,11 @@
 import type { APIRoute } from "astro";
 import { experience, featured, profile, socials, timeline, toolbox, works } from "../config";
 
+const source = (href: string, repo?: string) => {
+  const url = repo && `https://github.com/${repo}`;
+  return url && url !== href ? ` Source: ${url}` : "";
+};
+
 // Plain-text summary for LLM crawlers (https://llmstxt.org).
 export const GET: APIRoute = ({ site }) => {
   const lines = [
@@ -10,11 +15,11 @@ export const GET: APIRoute = ({ site }) => {
     "",
     "## Featured",
     "",
-    `- [${featured.title}](${featured.href}): ${featured.description}`,
+    `- [${featured.title}](${featured.href}): ${featured.description}${source(featured.href, featured.repo)}`,
     "",
     "## Other works",
     "",
-    ...works.map((work) => `- [${work.title}](${work.href}): ${work.description}`),
+    ...works.map((work) => `- [${work.title}](${work.href}): ${work.description}${source(work.href, work.repo)}`),
     "",
     "## Experience",
     "",
