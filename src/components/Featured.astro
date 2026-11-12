@@ -3,10 +3,12 @@ import { featured } from "../config";
 import Icon from "./Icon.astro";
 ---
 
-<a class="card featured" href={featured.href} target="_blank" rel="noreferrer" data-spotlight data-reveal>
+<article class="card featured" data-spotlight data-reveal>
   <div class="head">
     <div>
-      <h3>{featured.title}</h3>
+      <h3>
+        <a class="main" href={featured.href} target="_blank" rel="noreferrer">{featured.title}</a>
+      </h3>
       <p class="desc muted">{featured.description}</p>
     </div>
     <span class="arrow-btn" aria-hidden="true">
@@ -23,7 +25,16 @@ import Icon from "./Icon.astro";
     </ul>
     {
       featured.repo && (
-        <div class="stats mono" data-repo={featured.repo}>
+        <a
+          class="stats mono"
+          href={`https://github.com/${featured.repo}`}
+          target="_blank"
+          rel="noreferrer"
+          title={`${featured.repo} on GitHub`}
+          data-repo={featured.repo}
+        >
+          <Icon name="github" size={15} />
+          <span class="sr-only">Source on GitHub</span>
           <span title="GitHub stars">
             <Icon name="star" size={15} />
             <b data-stat="stars">—</b>
@@ -35,11 +46,11 @@ import Icon from "./Icon.astro";
             <span class="sr-only">forks</span>
           </span>
           <span class="updated" data-stat="updated" hidden />
-        </div>
+        </a>
       )
     }
   </div>
-</a>
+</article>
 
 <style>
   .featured {
@@ -96,20 +107,38 @@ import Icon from "./Icon.astro";
     translate: -24px 24px;
   }
 
+  /* The title link stretches over the whole card; the repo link sits above it. */
+  .main {
+    outline: none;
+  }
+
+  .main::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+  }
+
+  .featured:has(.main:focus-visible) {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
   .featured:hover .arrow-btn,
-  .featured:focus-visible .arrow-btn {
+  .featured:has(.main:focus-visible) .arrow-btn {
     background: var(--ink);
     color: var(--bg);
   }
 
   .featured:hover .arrow-btn :global(.a),
-  .featured:focus-visible .arrow-btn :global(.a) {
+  .featured:has(.main:focus-visible) .arrow-btn :global(.a) {
     opacity: 0;
     translate: 24px -24px;
   }
 
   .featured:hover .arrow-btn :global(.b),
-  .featured:focus-visible .arrow-btn :global(.b) {
+  .featured:has(.main:focus-visible) .arrow-btn :global(.b) {
     opacity: 1;
     translate: none;
   }
@@ -158,11 +187,25 @@ import Icon from "./Icon.astro";
   }
 
   .stats {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     gap: 16px;
+    margin: -6px -12px;
+    padding: 6px 12px;
+    border-radius: 999px;
     color: var(--ink-2);
     font-size: 14px;
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out);
+  }
+
+  .stats:hover,
+  .stats:focus-visible {
+    background: var(--bg);
+    color: var(--ink);
   }
 
   .stats > span {

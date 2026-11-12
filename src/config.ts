@@ -55,12 +55,14 @@ export const featured = {
   tags: ["TypeScript", "Effect", "Next.js", "Railway"],
 };
 
-export const works = [
+// `repo` (owner/name) adds a link to the project's GitHub repository.
+export const works: Array<{ title: string; description: string; href: string; repo?: string; meta: string }> = [
   {
     title: "RealPDF",
     description:
       "A PDF editor that runs entirely in your browser: edit text, fill forms, convert Office files and sign. Your documents never leave your device.",
     href: "https://realpdf.app",
+    repo: "shixzie/realpdf",
     meta: "React · pdf.js · WebCrypto",
   },
   {
@@ -68,6 +70,7 @@ export const works = [
     description:
       "A cross-platform, GPU-first live production system written in Rust, aiming for vMix-level switching, mixing and streaming on any OS.",
     href: "https://github.com/shixzie/freemix",
+    repo: "shixzie/freemix",
     meta: "Rust · GPU · Live video",
   },
   {
@@ -75,6 +78,7 @@ export const works = [
     description:
       "A chat app for communities: servers, channels, roles and channels shared across servers. Use the hosted instance or run your own.",
     href: "https://fuwa.chat",
+    repo: "waifu-devs/fuwa",
     meta: "fuwa.chat",
   },
   {
